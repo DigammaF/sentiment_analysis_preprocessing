@@ -1,0 +1,41 @@
+
+read.csv("")
+df_num <- df[, sapply(df, is.numeric)]
+acp <- prcomp(data, center = TRUE, scale. = TRUE)
+
+plot(acp, type = "l")
+biplot(acp)
+
+sentiment_num <- sentiment_num[, sapply(sentiment_num, function(x) var(x, na.rm = TRUE) > 0)]
+
+--------------------------------------------------- Classification
+
+library(factoextra)
+
+fviz_nbclust(
+  data_scaled,
+  kmeans,
+  method = "wss"
+)
+
+fviz_nbclust(
+  data_scaled,
+  kmeans,
+  method = "silhouette"
+)
+
+---------------------------------------------------- AFD
+
+library(MASS)
+
+# Ajustement du modèle
+afd <- lda(Species ~ Sepal.Length + Sepal.Width +
+                     Petal.Length + Petal.Width,
+           data = iris)
+
+# Résultats
+afd
+
+---------------------------------------------------- Khi Deux
+
+chisq.test(table(df$categorie, df$categorie))

@@ -1,4 +1,6 @@
 
+install.packages("")
+
 read.csv("")
 df_num <- df[, sapply(df, is.numeric)]
 acp <- prcomp(data, center = TRUE, scale. = TRUE)
@@ -28,14 +30,80 @@ fviz_nbclust(
 
 library(MASS)
 
-# Ajustement du modèle
-afd <- lda(Species ~ Sepal.Length + Sepal.Width +
-                     Petal.Length + Petal.Width,
-           data = iris)
+> indien_clean$is_senior <- as.factor(indien_clean$is_senior)
 
-# Résultats
-afd
+# supprimer colonnes constantes
+indien_clean <- indien_clean[, sapply(indien_clean, function(x) length(unique(x)) > 1)]
+
+# supprimer facteurs invalides
+indien_clean <- indien_clean[, !sapply(indien_clean, function(x) is.factor(x) && nlevels(x) < 2)]
+
+> freq <- table(indien_clean$job_title)
+> keep <- names(freq[freq > 10])
+> X <- indien_clean[, sapply(indien_clean, is.numeric)]
+> data_lda <- cbind(job_title = indien_clean$job_title, X)
+> data_lda$job_title <- as.factor(data_lda$job_title)
+> afd <- lda(job_title ~ ., data = data_lda)
+
+afd_pred <- predict(afd)
+
+cls <- as.factor(data_lda$job_title)
+cols <- as.numeric(cls)
+
+plot(afd_pred$x[,1], afd_pred$x[,2], col = as.factor(sentiment_simple$sentiment), pch = 19)
+
+legend("topright", legend = levels(cls), col = 1:length(levels(cls)), pch = 19, cex = 0.6)
 
 ---------------------------------------------------- Khi Deux
 
 chisq.test(table(df$categorie, df$categorie))
+
+indien_clean$job_title <- as.factor(indien_clean$job_title)
+indien_clean$company_name <- as.factor(indien_clean$company_name)
+indien_clean$location <- as.factor(indien_clean$location)
+indien_clean$scraped_city <- as.factor(indien_clean$scraped_city)
+indien_clean$role_category <- as.factor(indien_clean$role_category)
+indien_clean$experience_raw <- as.factor(indien_clean$experience_raw)
+indien_clean$salary_raw <- as.factor(indien_clean$salary_raw)
+indien_clean$salary_disclosed <- as.factor(indien_clean$salary_disclosed)
+indien_clean$work_mode <- as.factor(indien_clean$work_mode)
+indien_clean$company_size_bucket <- as.factor(indien_clean$company_size_bucket)
+indien_clean$salary_tier <- as.factor(indien_clean$salary_tier)
+indien_clean$experience_tier <- as.factor(indien_clean$experience_tier)
+indien_clean$is_senior <- as.factor(indien_clean$is_senior)
+indien_clean$primary_city <- as.factor(indien_clean$primary_city)
+indien_clean$skill_domain <- as.factor(indien_clean$skill_domain)
+indien_clean$is_fresher_friendly <- as.factor(indien_clean$is_fresher_friendly)
+indien_clean$salary_negotiable <- as.factor(indien_clean$salary_negotiable)
+
+library(dplyr)
+
+fact_vars <- data %>% select(where(is.factor))
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+vars <- names(fact_vars)
+
+chi_matrix <- matrix(NA, nrow = length(vars), ncol = length(vars))
+rownames(chi_matrix) <- vars
+colnames(chi_matrix) <- vars
+
+for (i in 1:length(vars)) {
+  for (j in 1:length(vars)) {
+
+    if (i != j) {
+      tab <- table(fact_vars[[i]], fact_vars[[j]])
+      chi_matrix[i, j] <- chisq.test(tab)$p.value
+    }
+  }
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+----------------------------------------------- ANOVA
+
+model <- aov(salary_max_lpa ~ experience_tier, data = indien_clean)
+summary(model)
+
+boxplot(salary_midpoint_lpa ~ job_title, data = indien_clean)
+
+
+job_title, experience_min_yrs
